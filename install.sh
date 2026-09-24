@@ -73,6 +73,7 @@ if [ "$DO_LINK" -eq 1 ]; then
   if [ -w "$PREFIX" ]; then
     for s in "$CODE_ROOT"/bin/pm-*.sh; do
       n="$(basename "$s" .sh)"
+      [ "$n" = "pm-lib" ] && continue   # es una librería, no un comando
       ln -sf "$s" "$PREFIX/$n"
     done
     echo "[v] Symlinks en $PREFIX: pm-scan, pm-status, pm-archive, pm-restore"
