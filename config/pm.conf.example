@@ -1,0 +1,31 @@
+# ─────────────────────────────────────────────────────────────
+# pm — Project Manager: configuración central
+# Editar aquí las rutas y políticas. Todo script hace source de este fichero.
+# ─────────────────────────────────────────────────────────────
+
+# --- Zonas de almacenamiento ---
+HOT_ROOT="/Volumes/YourFastDisk/Projects"
+COLD_ROOT="/Volumes/YourArchiveDisk/Projects"          # árboles navegables (legado, opcional)
+ARCHIVE_ROOT="/Volumes/YourArchiveDisk/ProjectArchive"  # zona sellada
+
+# --- Infraestructura ---
+PM_HOME="$HOME/.config/pm-archive"
+INDEX_FILE="$PM_HOME/data/index.json"
+SNAPSHOT_DIR="$PM_HOME/data/snapshots"
+LOG_DIR="$PM_HOME/logs"
+
+# --- Descubrimiento ---
+# Profundidad máxima al buscar proyectos. Los proyectos pueden estar a varios
+# niveles (cliente/línea/proyecto), así que no se asume profundidad fija.
+MAX_DEPTH=5
+
+# --- Compresión ---
+# zstd -19 --long: ratio alto, descompresión rápida. Fallback a gzip si no existe.
+COMPRESS_LEVEL=19
+COMPRESS_THREADS=0   # 0 = auto (todos los cores)
+
+# --- Umbral de "inactivo" para sugerir archivado (días) ---
+STALE_DAYS=120
+
+# --- Timeout para operaciones de red git (segundos) ---
+GIT_NET_TIMEOUT=15

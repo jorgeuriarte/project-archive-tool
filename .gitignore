@@ -1,0 +1,4 @@
+data/
+logs/
+config/pm.conf
+.DS_Store

@@ -1,0 +1,30 @@
+# Patrones excluidos al archivar. Todo lo de aquí es REGENERABLE.
+# Formato: patrones tar --exclude (se aplican a cualquier nivel).
+node_modules
+.venv
+venv
+__pycache__
+.pytest_cache
+.mypy_cache
+.ruff_cache
+dist
+build
+.next
+.nuxt
+.turbo
+.parcel-cache
+target
+.gradle
+.terraform
+vendor/bundle
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+*.pyc
+*.pyo
+.tox
+coverage
+.nyc_output
+.cache
