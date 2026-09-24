@@ -54,6 +54,20 @@ for f in exclude.txt secrets.txt; do
   [ -f "$INST/config/$f" ] || { cp "$CODE_ROOT/config/$f" "$INST/config/$f"; echo "[v] Creado $INST/config/$f"; }
 done
 
+# --- Puntero a la instancia ---
+# Los scripts buscan la instancia en ~/.config/pm-archive cuando no hay $PM_HOME.
+# Si la instancia está en otro sitio, se deja ahí un symlink para que la encuentren.
+DEFAULT_HOME="$HOME/.config/pm-archive"
+if [ "$INST" != "$DEFAULT_HOME" ]; then
+  if [ -e "$DEFAULT_HOME" ] && [ ! -L "$DEFAULT_HOME" ]; then
+    echo "[!] $DEFAULT_HOME existe y no es un enlace: exporta PM_HOME=\"$INST\" a mano"
+  else
+    mkdir -p "$(dirname "$DEFAULT_HOME")"
+    ln -sfn "$INST" "$DEFAULT_HOME"
+    echo "[v] $DEFAULT_HOME -> $INST"
+  fi
+fi
+
 # --- PATH ---
 if [ "$DO_LINK" -eq 1 ]; then
   if [ -w "$PREFIX" ]; then
