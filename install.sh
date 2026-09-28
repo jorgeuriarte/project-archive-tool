@@ -80,6 +80,14 @@ DEFAULT_HOME="$HOME/.config/pm-archive"
 if [ "$INST" != "$DEFAULT_HOME" ]; then
   if [ -e "$DEFAULT_HOME" ] && [ ! -L "$DEFAULT_HOME" ]; then
     echo "[!] $DEFAULT_HOME existe y no es un enlace: exporta PM_HOME=\"$INST\" a mano"
+  elif [ -L "$DEFAULT_HOME" ] && [ "$(readlink "$DEFAULT_HOME")" != "$INST" ]; then
+    # Ya había una instancia distinta: no se pisa en silencio, porque ahí viven
+    # la configuración y el índice del usuario.
+    echo "[!] Ya hay una instancia registrada:" >&2
+    echo "      $DEFAULT_HOME -> $(readlink "$DEFAULT_HOME")" >&2
+    echo "    No se toca. Para cambiarla a '$INST':" >&2
+    echo "      ln -sfn \"$INST\" \"$DEFAULT_HOME\"" >&2
+    echo "    O usa PM_HOME=\"$INST\" al invocar los comandos." >&2
   else
     mkdir -p "$(dirname "$DEFAULT_HOME")"
     ln -sfn "$INST" "$DEFAULT_HOME"
