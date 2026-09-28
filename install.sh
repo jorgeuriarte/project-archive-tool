@@ -11,9 +11,28 @@
 #   ./install.sh --prefix ~/bin       # dónde poner los symlinks (por defecto /usr/local/bin)
 #   ./install.sh --home /ruta/inst    # dónde vive la instancia
 #   ./install.sh --no-link            # solo crea la instancia, sin tocar el PATH
+#
+# También funciona sin clonar nada:
+#   curl -fsSL https://raw.githubusercontent.com/jorgeuriarte/project-archive-tool/main/install.sh | bash
 # ─────────────────────────────────────────────────────────────
 set -euo pipefail
-CODE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
+
+REPO_URL="https://github.com/jorgeuriarte/project-archive-tool.git"
+CODE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd || echo "")"
+
+# Ejecutado vía `curl ... | bash` no hay repo alrededor: clonarlo primero.
+if [ -z "$CODE_ROOT" ] || [ ! -f "$CODE_ROOT/bin/pm-lib.sh" ]; then
+  CODE_ROOT="${PM_CODE_DIR:-$HOME/.local/share/pm-archive}"
+  if [ -d "$CODE_ROOT/.git" ]; then
+    echo "[i] Actualizando $CODE_ROOT"
+    git -C "$CODE_ROOT" pull --quiet --ff-only || echo "[!] No se pudo actualizar; se usa la copia local"
+  else
+    echo "[i] Descargando en $CODE_ROOT"
+    mkdir -p "$(dirname "$CODE_ROOT")"
+    git clone --quiet --depth 1 "$REPO_URL" "$CODE_ROOT" || {
+      echo "[x] No se pudo clonar $REPO_URL" >&2; exit 1; }
+  fi
+fi
 PREFIX="/usr/local/bin"
 INST="${PM_HOME:-$HOME/.config/pm-archive}"
 DO_LINK=1

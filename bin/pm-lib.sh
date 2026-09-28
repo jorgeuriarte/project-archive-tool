@@ -217,3 +217,57 @@ pm_detect_secrets() {
         -o -type f \( "${pats[@]}" \) -print 2>/dev/null \
     | sed "s|^$d/||"
 }
+
+# --- Copia de cortesía en el disco de archivo ---
+# El disco frío debe explicarse a sí mismo: si aparece dentro de años, sin esta
+# máquina y sin acceso al repo de la instancia, su contenido debe ser legible.
+# Se deja una copia del índice y un README de recuperación en su raíz.
+# Es informativa y de un solo sentido: nunca se lee de vuelta, nunca hay conflictos.
+pm_write_archive_readme() {
+  local root="${1:-$ARCHIVE_ROOT}"
+  [ -d "$root" ] || return 0
+
+  [ -f "$INDEX_FILE" ] && cp "$INDEX_FILE" "$root/index.json" 2>/dev/null
+
+  cat > "$root/RECUPERACION.md" <<'TXT'
+# Cómo recuperar lo que hay en este disco
+
+Cada proyecto archivado vive en `<Cliente>/<proyecto>/` y contiene:
+
+| Fichero | Qué es |
+|---|---|
+| `<nombre>.tar.zst` | El proyecto completo, sin dependencias regenerables |
+| `<nombre>.tar.zst.sha256` | Checksum para verificar integridad |
+| `<nombre>.bundle` | La historia git completa, autocontenida |
+| `manifest.json` | Metadatos: fecha, estado git, rama, remoto, secretos incluidos |
+
+`index.json` (en esta misma carpeta) es una copia del inventario en el momento del
+último archivado: qué proyectos existían, dónde y en qué estado.
+
+## Recuperar sin ninguna herramienta especial
+
+```bash
+# Ver el contenido sin extraer
+zstd -dc proyecto.tar.zst | tar -tf - | less
+
+# Extraer
+mkdir -p destino && zstd -dc proyecto.tar.zst | tar -xf - -C destino
+
+# Reconstruir el repositorio git desde el bundle
+git clone proyecto.bundle destino
+
+# Verificar integridad
+shasum -a 256 -c proyecto.tar.zst.sha256
+```
+
+Sólo hacen falta `zstd`, `tar` y `git`. En macOS: `brew install zstd`.
+
+## Avisos
+
+- Los proyectos **no arrancan al restaurar**: `node_modules`, entornos virtuales y
+  cachés no se archivan por ser regenerables. Reinstala dependencias.
+- Algunos archivos **contienen credenciales en claro**. El campo `secrets_in_archive`
+  de cada `manifest.json` dice cuáles.
+- La herramienta que generó esto: https://github.com/jorgeuriarte/project-archive-tool
+TXT
+}

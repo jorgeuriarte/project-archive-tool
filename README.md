@@ -49,11 +49,21 @@ bloquearlos para siempre, exigen un flag explícito que deja constancia de que a
 ## Instalación
 
 ```bash
+curl -fsSL https://raw.githubusercontent.com/jorgeuriarte/project-archive-tool/main/install.sh | bash
+```
+
+Clona el código en `~/.local/share/pm-archive`, crea la instancia en `~/.config/pm-archive` y
+deja los comandos en el PATH. Repetir el mismo comando actualiza la herramienta sin tocar tu
+configuración.
+
+O clonando a mano:
+
+```bash
 git clone https://github.com/jorgeuriarte/project-archive-tool.git
 cd project-archive-tool
-./install.sh                    # symlinks en /usr/local/bin, instancia en ~/.config/pm-archive
-# o, sin tocar el PATH:
-./install.sh --no-link
+./install.sh                    # symlinks en /usr/local/bin
+./install.sh --prefix ~/.local/bin --home ~/.config/pm-archive   # sin sudo
+./install.sh --no-link          # sin tocar el PATH
 ```
 
 Después edita `~/.config/pm-archive/config/pm.conf` y define al menos:

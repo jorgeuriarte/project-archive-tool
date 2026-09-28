@@ -252,4 +252,5 @@ else
 fi
 
 echo "$STAMP  ARCHIVE  $REL  state=$STATE  files=$NFILES  keep_hot=$KEEP_HOT" >> "$LOG_DIR/operations.log"
+pm_write_archive_readme "$ARCHIVE_ROOT"
 ok "Archivado completo: $DEST"
