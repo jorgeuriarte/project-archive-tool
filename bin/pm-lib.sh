@@ -27,7 +27,28 @@ elif [ -f "$HOME/.config/pm-archive/config/pm.conf" ]; then
 elif [ -f "$PM_CODE_ROOT/config/pm.conf" ]; then
   PM_ROOT="$PM_CODE_ROOT"
 else
-  echo "[x] No encuentro config/pm.conf. Define PM_HOME o ejecuta install.sh" >&2
+  # Distinguir "no instalado" de "instalado pero el disco de la instancia no está montado":
+  # un symlink roto casi siempre significa un volumen desconectado, no una mala instalación.
+  _pm_hint=""
+  for _c in "${PM_HOME:-}" "$HOME/.config/pm-archive"; do
+    [ -n "$_c" ] || continue
+    if [ -L "$_c" ] && [ ! -e "$_c" ]; then
+      _pm_hint="$(readlink "$_c")"
+      break
+    fi
+  done
+  if [ -n "$_pm_hint" ]; then
+    echo "[x] La instancia apunta a '$_pm_hint', que no está accesible." >&2
+    case "$_pm_hint" in
+      /Volumes/*)
+        _pm_vol="$(printf '%s' "$_pm_hint" | cut -d/ -f1-3)"
+        echo "    El volumen $_pm_vol no está montado. Conéctalo y reintenta." >&2 ;;
+      *) echo "    Comprueba que esa ruta exista antes de reintentar." >&2 ;;
+    esac
+    echo "    (No reinstales: la configuración sigue en ese disco.)" >&2
+  else
+    echo "[x] No encuentro config/pm.conf. Define PM_HOME o ejecuta install.sh" >&2
+  fi
   exit 1
 fi
 # shellcheck source=/dev/null
