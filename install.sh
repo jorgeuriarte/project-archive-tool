@@ -18,9 +18,16 @@
 set -euo pipefail
 
 REPO_URL="https://github.com/jorgeuriarte/project-archive-tool.git"
-CODE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd || echo "")"
+# Leído por stdin (curl | bash) no existe un fichero de script: $0 vale "bash" y
+# dirname devolvería el directorio actual, que podría contener un bin/ ajeno.
+_self="${BASH_SOURCE[0]:-$0}"
+if [ -f "$_self" ]; then
+  CODE_ROOT="$(cd "$(dirname "$_self")" 2>/dev/null && pwd || echo "")"
+else
+  CODE_ROOT=""
+fi
 
-# Ejecutado vía `curl ... | bash` no hay repo alrededor: clonarlo primero.
+# Sin repo alrededor: clonarlo primero.
 if [ -z "$CODE_ROOT" ] || [ ! -f "$CODE_ROOT/bin/pm-lib.sh" ]; then
   CODE_ROOT="${PM_CODE_DIR:-$HOME/.local/share/pm-archive}"
   if [ -d "$CODE_ROOT/.git" ]; then
