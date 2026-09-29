@@ -172,8 +172,12 @@ while IFS= read -r SRC; do
     FAILED=$((FAILED+1)); continue
   fi
 
-  pct=$(( 100 - (tar_kb * 100 / (size_kb>0?size_kb:1)) ))
-  printf ' %s->%s %s MB (-%s%%)' "$C_DIM" "$C_RST" "$((tar_kb/1024))" "$pct"
+  if [ "$size_kb" -gt 0 ] && [ "$tar_kb" -le "$size_kb" ]; then
+    pct=$(( 100 - (tar_kb * 100 / size_kb) ))
+    printf ' %s->%s %s MB (-%s%%)' "$C_DIM" "$C_RST" "$((tar_kb/1024))" "$pct"
+  else
+    printf ' %s->%s %s KB' "$C_DIM" "$C_RST" "$tar_kb"
+  fi
   if [ "$KEEP_SRC" -eq 0 ]; then
     rm -rf "$SRC" && printf ' %sliberado%s' "$C_GRN" "$C_RST"
   fi
