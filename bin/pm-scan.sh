@@ -168,5 +168,9 @@ jq -R -s --arg gen "$(date -Iseconds)" \
 mkdir -p "$SNAPSHOT_DIR"
 cp "$INDEX_FILE" "$SNAPSHOT_DIR/index-$(date +%Y%m%d-%H%M%S).json"
 
+# Mantener al día la copia de cortesía del disco de archivo, para que siga
+# explicándose a sí mismo aunque el último cambio haya sido sólo un escaneo.
+pm_write_archive_readme "$ARCHIVE_ROOT" 2>/dev/null
+
 ok "Índice generado: $INDEX_FILE"
 jq -r '"  proyectos: \(.stats.total)  |  caliente: \(.stats.hot_size_gb) GB (basura: \(.stats.hot_junk_gb) GB)"' "$INDEX_FILE" >&2
