@@ -215,7 +215,8 @@ pm_detect_secrets() {
              -o -name __pycache__ -o -name .mypy_cache -o -name .pytest_cache \
              -o -name dist -o -name build -o -name target \) -prune \
         -o -type f \( "${pats[@]}" \) -print 2>/dev/null \
-    | sed "s|^$d/||"
+    | sed "s|^$d/||" \
+    | grep -vEi '\.(example|sample|template|dist|tpl)$|^example|/example' || true
 }
 
 # --- Copia de cortesía en el disco de archivo ---
