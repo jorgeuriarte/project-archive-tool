@@ -73,7 +73,11 @@ discover() {
 
 scan_zone() {
   local zone="$1" root="$2" n=0 total
-  [ -d "$root" ] || { warn "Zona '$zone' no disponible: $root"; return 0; }
+  if [ -z "$root" ]; then
+    [ "$QUIET" -eq 1 ] || info "Zona '$zone' no configurada, se omite"
+    return 0
+  fi
+  [ -d "$root" ] || { warn "Zona '$zone' no accesible: $root"; return 0; }
   local list; list="$(discover "$root" | sort -u)"
   total="$(printf '%s\n' "$list" | grep -c . )"
   [ "$QUIET" -eq 1 ] || info "Zona $zone: $total proyectos en $root"
@@ -115,6 +119,23 @@ scan_zone() {
 }
 
 pm_require_mounts
+
+# Un escaneo parcial (--hot-only / --cold-only) conserva las zonas no escaneadas:
+# reescribir el índice entero con media foto perdería información.
+if [ -f "$INDEX_FILE" ] && { [ "$SCAN_HOT" -eq 0 ] || [ "$SCAN_COLD" -eq 0 ]; }; then
+  KEEP=""
+  [ "$SCAN_HOT"  -eq 0 ] && KEEP="hot"
+  [ "$SCAN_COLD" -eq 0 ] && KEEP="cold\", \"archive"
+  jq -r --arg k "$KEEP" '
+    .projects[] | select([.zone] | inside($k | split("\", \"")))
+    | [.zone,.rel_path,.client,.name,.path,.git.kind,.git.state,
+       (.git.branch//""),(.git.remote//""),(.git.ahead|tostring),(.git.behind|tostring),
+       (.git.dirty_files|tostring),(.size_kb|tostring),(.junk_kb|tostring),
+       ((.last_commit//"")+"|"+(.last_mtime//"")),(.git.worktree_parent//"")]
+    | @tsv' "$INDEX_FILE" >> "$TSV" 2>/dev/null
+  [ "$QUIET" -eq 1 ] || info "Conservadas las zonas no escaneadas del índice anterior"
+fi
+
 [ "$SCAN_HOT"  -eq 1 ] && scan_zone hot     "$HOT_ROOT"
 [ "$SCAN_COLD" -eq 1 ] && scan_zone cold    "$COLD_ROOT"
 [ "$SCAN_COLD" -eq 1 ] && scan_zone archive "$ARCHIVE_ROOT"
